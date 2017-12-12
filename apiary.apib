@@ -1,0 +1,214 @@
+FORMAT: 1A
+HOST: http://agendav2.apiblueprint.org/agenda/v2
+
+# Agenda-v2
+
+Agenda is a simple API allowing consumers to schedule meeting on-line. And this is version 2.
+
+# Group User
+
+Resource operations related to a user in the API.
+
+## User Collection [/user]
+
+### Log-in [GET /user/login/{?username,password}]
+
++ Parameters
+    - username : `root` (string, required) - User Name
+    - password : `pass` (required)
+
++ Response 200 (application/json)
+
+        {
+            "Key":"1e3576bt"
+        }
+
+### Register-user [POST /user/register]
+
++ Request (application/json)
+
+        {
+            "Username":"abc",
+            "Password":"abc123",
+            "Email":"abc@qq.com",
+            "Telephone":"15000000000"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "Username":"abc",
+            "Password":"abc123",
+            "Email":"abc@qq.com",
+            "Telephone":"15000000000"
+        }
+
+### Verify-key [GET /user/verify/{?key}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+
++ Response 200 (application/json)
+
+        {
+            "Success":true
+        }
+
+### Log-out [GET /user/logout/{?key}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+
++ Response 200 (application/json)
+
+        {
+            "Success":true
+        }
+
+### Delete-user [GET /user/delete/{?key}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+
++ Response 200 (application/json)
+
+        {
+            "Success":true
+        }
+
+# Group Users
+
+Resource operations related to a users in the API.
+
+## List-User [/user/{?key}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+
+### List-all-users [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "Username":"abc",
+                "Email":"abc123@qq.com",
+                "Telephone":"15000000000"
+            },{
+                "Username":"cba",
+                "Email":"cba321@qq.com",
+                "Telephone":"15000000001"
+            }
+        ]
+
+# Group Meeting
+
+Resource operations related to a meeting in the API.
+
+## Meeting Collection [/meeting]
+
+### Create-meeting [POST /meeting/create]
+
++ Request (application/json)
+
+        {
+            "Key":"1e3576bt",
+            "Title":"meeting1",
+            "Participants":["p1", "p2"],
+            "Start":"2017-12-12 13:00:00",
+            "End":"2017-12-12 14:00:00"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "Key":"1e3576bt",
+            "Title":"meeting1",
+            "Participants":["p1", "p2"],
+            "Start":"2017-12-12 13:00:00",
+            "End":"2017-12-12 14:00:00"
+        }
+
+### Modify-meeting [POST /meeting/modify]
+
++ Request (application/json)
+
+        {
+            "Key":"1e3576bt",
+            "Titile":"meeting1",
+            "Add":["p3", "p4"],
+            "Delete":["p1", "p2"]
+        }
+
++ Response 200 (application/json)
+
+        {
+            "Add":true,
+            "Delete":true
+        }
+
+### Cancel-meeting [GET /meeting/cancel/{?key,title}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+    - title : `meeting1` (string, required)
+
++ Response 200 (application/json)
+
+        {
+            "Success":true
+        }
+        
+### Quit-meeting [GET /meeting/quit/{?key,title}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+    - title : `meeting1` (string, required)
+
++ Response 200 (application/json)
+
+        {
+            "Success":true
+        }
+
+# Group Meetings
+
+Resource operations related to a meetings in the API.
+
+## Meetings Collection [/meetings]
+
+### Query-meetings [GET /meetings/query/{?key,start,end}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+    - start : `2017-12-12 13:00:00` (string, required)
+    - end : `2017-12-12 14:00:00` (string, required)
+
++ Response 200 (application/json)
+
+        [
+            {
+                "Key":"1e3576bt",
+                "Title":"meeting1",
+                "Participants":["p1", "p2"],
+                "Start":"2017-12-12 13:00:00",
+                "End":"2017-12-12 14:00:00"
+            },{
+                "Key":"1e5676bt",
+                "Title":"meeting2",
+                "Participants":["p3", "p4"],
+                "Start":"2017-12-12 13:00:00",
+                "End":"2017-12-12 14:00:00"
+            }
+        ]
+
+### Delete-meetings [GET /meetings/delete/{?key}]
+
++ Parameters
+    - key : `1e3576bt` (string, required)
+
++ Response 200 (appliction/json)
+
+        {
+            "Success":true
+        }
