@@ -1,0 +1,4 @@
+langyage: go
+
+go:
+    - 1.8
