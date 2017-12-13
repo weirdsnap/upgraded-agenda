@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 type User struct {
@@ -15,14 +16,19 @@ type User struct {
 	Email     string
 	Telephone string
 }
+type Meeting struct {
+	Host         string
+	Title        string
+	Participants []string
+	Start        string
+	End          string
+}
 
-var key string = "1b23456yf"
-
-// var currentUser *User = nil
+//测试时用
+// var key string = "1b23456yf"
+var key string = ""
 
 func Register(username, password, email, telphone string) {
-	// var a, b, c, d bool
-	// var err error
 	//合法性检查
 	a, err := isUserNameValid(username)
 	if false == a {
@@ -110,7 +116,6 @@ func Login(username, password string) {
 	if err != nil {
 		panic(err)
 	}
-	// fmt.Println(string(res_body))
 	resKey := struct {
 		Key string
 	}{"1b23456yf"}
@@ -123,12 +128,14 @@ func Login(username, password string) {
 		fmt.Println("Login failed! Error: username and password unmatch!")
 		return
 	}
+	//登陆成功后在本地记录返回的key
 	key = resKey.Key
 	fmt.Println("Login success!")
 	return
 
 }
 
+//检查服务器端该key对应的用户是否处在登陆状态
 func checkKey() bool {
 	prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/user/verify/"
 	parameters := "?key=" + key
@@ -156,6 +163,7 @@ func checkKey() bool {
 }
 
 func Logout() {
+	//检查当前是否有用户登陆
 	if !isLogined() {
 		fmt.Println("Logout failed! Error: no user login now.")
 		return
@@ -273,121 +281,295 @@ func DeleteUser() {
 }
 
 func CreateMeeting(title string, participators []string, starttime string, endtime string) {
-	// initialization()
-	// if isLogined() {
-	// 	for _, s := range participators {
-	// 		if users.QueryUser(s) == nil {
-	// 			fmt.Println("Create Meeting failed! invalid user")
-	// 			return
-	// 		}
-	// 	}
-	// 	t, _ := isTimeValid(starttime)
-	// 	r, _ := isTimeValid(endtime)
-	// 	if t == false || r == false {
-	// 		fmt.Println("wrong time")
-	// 		return
-	// 	}
-	// 	if meetings.AddMeeting(NewMeeting(title, starttime, endtime, currentUser.Username, participators)) == false {
-	// 		fmt.Println("filed!")
-	// 		return
-	// 	}
-	// 	fmt.Println("Create Meeting successed!")
-	// } else {
-	// 	fmt.Println("Please login first!")
-	// }
-	// update()
-	// return
+	//检测是否已经有登陆用户
+	if !isLogined() {
+		fmt.Println("Create meeting failed! Error: no user login now.")
+		return
+	}
+	//检查会议名称是否为空
+	if title == "" {
+		fmt.Println("Create meeting failed! Error: meeting must have a title!")
+		return
+	}
+	//检查时间格式的合法性
+	s, _ := isTimeValid(starttime)
+	e, _ := isTimeValid(endtime)
+	if s == false || e == false {
+		fmt.Println("Create meeting failed! Error: time format invalid!")
+		return
+	}
+	if checkKey() {
+		meeting := struct {
+			Key          string
+			Title        string
+			Participants []string
+			Start        string
+			End          string
+		}{key, title, participators, starttime, endtime}
+		Jmeeting, err := json.Marshal(meeting)
+		if err != nil {
+			panic(err)
+		}
+		post_body := bytes.NewBuffer([]byte(Jmeeting))
+		res, err := http.Post("https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meeting/create", "application/json;charset=utf-8", post_body)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+		//转换回user对象
+		res_body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		err1 := json.Unmarshal(res_body, &meeting)
+		if err != nil {
+			panic(err1)
+		}
+		//只检测key可以吗？
+		if meeting.Key == "null" {
+			fmt.Println("Create meeting failed!")
+			return
+		} else {
+			fmt.Println("Create meeting success!")
+			fmt.Println(meeting.Key)
+			fmt.Println(meeting.Title)
+			fmt.Println(meeting.Participants)
+			fmt.Println(meeting.Start)
+			fmt.Println(meeting.End)
+		}
+	} else {
+		fmt.Println("Create meeting failed! Error : no user log in now.")
+		return
+	}
 }
 
 func ModifyMeeting(title string, addedparticipators []string, deletedparticipators []string) {
-	// initialization()
-	// if isLogined() {
-	// 	//fmt.Println("add user", addedparticipators[0], len(addedparticipators))
-	// 	if addedparticipators != nil && addedparticipators[0] != "" {
-	// 		for _, s := range addedparticipators {
-	// 			if users.QueryUser(s) == nil {
-	// 				fmt.Println("add participators failed! invalid user")
-	// 				return
-	// 			}
-	// 		}
-	// 		if meetings.AddParticipants(title, addedparticipators) == false {
-	// 			fmt.Println("Modify Meeting failed! invalid title or add user")
-	// 			return
-	// 		}
-	// 	}
-	// 	if deletedparticipators != nil && deletedparticipators[0] != "" {
-	// 		for _, s := range deletedparticipators {
-	// 			if users.QueryUser(s) == nil {
-	// 				fmt.Println("delete participators failed! invalid user")
-	// 				return
-	// 			}
-	// 		}
-	// 		if meetings.DeleteParticipants(title, deletedparticipators) == false {
-	// 			fmt.Println("Modify Meeting failed! invalid title or delete user")
-	// 			return
-	// 		}
-	// 	}
-	// 	fmt.Println("Modify Meeting successed!")
-	// }
-	// update()
-	// return
+	//检测是否已经有登陆用户
+	if !isLogined() {
+		fmt.Println("Modify meeting failed! Error: no user login now.")
+		return
+	}
+	if title == "" {
+		fmt.Println("Modify meeting failed! Error: meeting must have a title!")
+		return
+	}
+	if checkKey() {
+		meeting := struct {
+			Key    string
+			Title  string
+			Add    []string
+			Delete []string
+		}{key, title, addedparticipators, deletedparticipators}
+		Jmeeting, err := json.Marshal(meeting)
+		if err != nil {
+			panic(err)
+		}
+		post_body := bytes.NewBuffer([]byte(Jmeeting))
+		res, err := http.Post("https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meeting/create", "application/json;charset=utf-8", post_body)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+		//转换回user对象
+		res_body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		err1 := json.Unmarshal(res_body, &meeting)
+		if err != nil {
+			panic(err1)
+		}
+		//只检测key可以吗？
+		if meeting.Key == "null" {
+			fmt.Println("Modify meeting failed!")
+			return
+		} else {
+			fmt.Println("Modify meeting success!")
+			// fmt.Println(meeting.Key)
+			// fmt.Println(meeting.Title)
+			// fmt.Println(meeting.Add)
+			// fmt.Println(meeting.Delete)
+		}
+	} else {
+		fmt.Println("Modify meeting failed! Error : no user log in now.")
+		return
+	}
 }
 
 func QueryMeeting(starttime string, endtime string) {
-	// initialization()
-	//
-	// if isLogined() {
-	// 	t, _ := isTimeValid(starttime)
-	// 	r, _ := isTimeValid(endtime)
-	// 	if t == false || r == false {
-	// 		fmt.Println("time wrong!")
-	// 	}
-	// 	meeting := meetings.QueryMeeting(starttime, endtime, currentUser.Username)
-	// 	for _, value := range meeting {
-	// 		fmt.Println(value)
-	// 	}
-	// }
-	// update()
-	// return
+	//检测是否已经有登陆用户
+	if !isLogined() {
+		fmt.Println("Query meeting failed! Error: no user login now.")
+		return
+	}
+	s, _ := isTimeValid(starttime)
+	e, _ := isTimeValid(endtime)
+	if s == false || e == false {
+		fmt.Println("Query meeting failed! Error: time format invalid!")
+		return
+	}
+	//将空格替换成%，这样发出去的请求格式才是正确的
+	starttime = strings.Replace(starttime, " ", "%", -1)
+	endtime = strings.Replace(endtime, " ", "%", -1)
+	if checkKey() {
+		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meetings/query/"
+		parameters := "?key=" + key + "&start=" + starttime + "&end=" + endtime
+		res, err := http.Get(prefix + parameters)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+		//创建数组用来装会议
+		meetings := make([]Meeting, 0)
+
+		res_body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		err1 := json.Unmarshal(res_body, &meetings)
+		if err != nil {
+			panic(err1)
+		}
+		//打印所有的用户
+		for _, meeting := range meetings {
+			fmt.Println(meeting.Host)
+			fmt.Println(meeting.Title)
+			fmt.Println(meeting.Participants)
+			fmt.Println(meeting.Start)
+			fmt.Println(meeting.End)
+			fmt.Println(" ")
+		}
+
+	} else {
+		fmt.Println("Please Log in first!")
+		return
+	}
+
 }
 
 func QuitMeeting(title string) {
-	// initialization()
-	// if isLogined() {
-	// 	if meetings.QuitMeeting(title, currentUser.Username) {
-	// 		fmt.Println("quit successed!")
-	// 	} else {
-	// 		fmt.Println("title wrong or you aren't hostor!")
-	// 	}
-	// }
-	// update()
-	// return
+	//检测是否已经有登陆用户
+	if !isLogined() {
+		fmt.Println("Quit meeting failed! Error: no user login now.")
+		return
+	}
+	if title == "" {
+		fmt.Println("Modify meeting failed! Error: meeting must have a title!")
+		return
+	}
+	if checkKey() {
+		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meeting/quit/"
+		parameters := "?key=" + key + "&title=" + title
+		res, err := http.Get(prefix + parameters)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+		success := struct {
+			Success bool
+		}{true}
+		res_body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		err1 := json.Unmarshal(res_body, &success)
+		if err != nil {
+			panic(err1)
+		}
+		if success.Success {
+			fmt.Println("Quit success!")
+			return
+		} else {
+			fmt.Println("Quit failed!")
+			return
+		}
+
+	} else {
+		fmt.Println("Please Log in first!")
+		return
+	}
 }
 
 func CancelMeeting(title string) {
+	//检测是否已经有登陆用户
+	if !isLogined() {
+		fmt.Println("cancel meeting failed! Error: no user login now.")
+		return
+	}
+	if title == "" {
+		fmt.Println("Modify meeting failed! Error: meeting must have a title!")
+		return
+	}
+	if checkKey() {
+		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meeting/cancel/"
+		parameters := "?key=" + key + "&title=" + title
+		res, err := http.Get(prefix + parameters)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+		success := struct {
+			Success bool
+		}{true}
+		res_body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		err1 := json.Unmarshal(res_body, &success)
+		if err != nil {
+			panic(err1)
+		}
+		if success.Success {
+			fmt.Println("Cancel success!")
+			return
+		} else {
+			fmt.Println("Cancel failed!")
+			return
+		}
 
-	// initialization()
-	// if isLogined() {
-	// 	if meetings.CancelMeeting(title, currentUser.Username) {
-	// 		fmt.Println("meeting cancle successed!")
-	// 	} else {
-	// 		fmt.Println("meeting title wrong or you aren't hostor!")
-	// 	}
-	// }
-	// update()
-	// return
+	} else {
+		fmt.Println("Please Log in first!")
+		return
+	}
 }
 
 func ClearMeeting() {
+	//检测是否已经有登陆用户
+	if !isLogined() {
+		fmt.Println("delete meetings failed! Error: no user login now.")
+		return
+	}
+	if checkKey() {
+		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meetings/delete/"
+		parameters := "?key=" + key
+		res, err := http.Get(prefix + parameters)
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+		success := struct {
+			Success bool
+		}{true}
+		res_body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		err1 := json.Unmarshal(res_body, &success)
+		if err != nil {
+			panic(err1)
+		}
+		if success.Success {
+			fmt.Println("Delete success!")
+			return
+		} else {
+			fmt.Println("Delete failed!")
+			return
+		}
 
-	// initialization()
-	// if isLogined() {
-	// 	if meetings.ClearMeeting(currentUser.Username) {
-	// 		fmt.Println("clear meeting successed!")
-	// 	}
-	// }
-	// update()
-	// return
+	} else {
+		fmt.Println("Please Log in first!")
+		return
+	}
 }
 
 func isUserNameValid(username string) (bool, error) {
