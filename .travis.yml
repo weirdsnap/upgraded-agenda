@@ -1,4 +1,12 @@
-langyage: go
+language: go
 
 go:
-    - 1.8
+- tip # The latest version of Go.
+
+script:
+  - go build cli/agenda.go
+  - go build service/agenda-service.go
+
+branches:
+  only:
+    - master

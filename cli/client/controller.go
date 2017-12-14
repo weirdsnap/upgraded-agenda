@@ -28,27 +28,27 @@ type Meeting struct {
 // var key string = "1b23456yf"
 var key string = ""
 
-func Register(username, password, email, telphone string) {
+func Register(username, password, email, telphone string) bool {
 	//合法性检查
 	a, err := isUserNameValid(username)
 	if false == a {
 		fmt.Println("username fail", err)
-		return
+		return false
 	}
 	b, err := isPasswordValid(password)
 	if false == b {
 		fmt.Println("password fail", err)
-		return
+		return false
 	}
 	c, err := isEmailValid(email)
 	if false == c {
 		fmt.Println("email fail", err)
-		return
+		return false
 	}
 	d, err := isTelNumberValid(telphone)
 	if false == d {
 		fmt.Println("telphone fail", err)
-		return
+		return false
 	}
 	//创建user对象
 	user := struct {
@@ -82,10 +82,10 @@ func Register(username, password, email, telphone string) {
 	//检查返回的结果
 	if user.Username == "null" && user.Password == "null" && user.Email == "null" && user.Telephone == "null" {
 		fmt.Println("register failed!")
-		return
+		return false
 	} else {
 		fmt.Println("register success!")
-		return
+		return true
 	}
 }
 
