@@ -14,7 +14,7 @@
 
 package main
 
-import "agenda/cmd"
+import "github.com/weirdsnap/upgraded-agenda/cli/cmd"
 
 func main() {
 	cmd.Execute()
