@@ -97,11 +97,11 @@ func isLogined() bool {
 	}
 }
 
-func Login(username, password string) {
+func Login(username, password string) bool {
 	//检测是否已经有登陆用户
 	if isLogined() {
 		fmt.Println("Login failed! Error : already Logined. Please logout first")
-		return
+		return false
 	}
 	//发送请求
 	prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/user/login/"
@@ -126,12 +126,12 @@ func Login(username, password string) {
 	}
 	if resKey.Key == "" {
 		fmt.Println("Login failed! Error: username and password unmatch!")
-		return
+		return false
 	}
 	//登陆成功后在本地记录返回的key
 	key = resKey.Key
 	fmt.Println("Login success!")
-	return
+	return true
 
 }
 
@@ -162,11 +162,11 @@ func checkKey() bool {
 	return false
 }
 
-func Logout() {
+func Logout() bool {
 	//检查当前是否有用户登陆
 	if !isLogined() {
 		fmt.Println("Logout failed! Error: no user login now.")
-		return
+		return false
 	}
 	//先检查用户是否在服务器上处于登陆状态
 	if checkKey() {
@@ -192,20 +192,20 @@ func Logout() {
 		if success.Success {
 			fmt.Println("Logout success!")
 			key = ""
-			return
+			return true
 		}
 		fmt.Println("Logout failed!")
-		return
+		return false
 	} else {
 		fmt.Println("Logout failed! Error: no user login now.")
-		return
+		return false
 	}
 }
 
-func ListUser() {
+func ListUser() bool {
 	if !isLogined() {
 		fmt.Println("Please Log in first!")
-		return
+		return false
 	}
 	if checkKey() {
 		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/users/"
@@ -233,18 +233,19 @@ func ListUser() {
 			fmt.Println(user.Telephone)
 			fmt.Println(" ")
 		}
+		return true
 
 	} else {
 		fmt.Println("Please Log in first!")
-		return
+		return false
 	}
 
 }
 
-func DeleteUser() {
+func DeleteUser() bool {
 	if !isLogined() {
 		fmt.Println("Delete failed! Error: no user login now.")
-		return
+		return false
 	}
 	//先检查用户是否在服务器上处于登陆状态
 	if checkKey() {
@@ -270,33 +271,33 @@ func DeleteUser() {
 		if success.Success {
 			fmt.Println("Delete success!")
 			key = ""
-			return
+			return true
 		}
 		fmt.Println("Delete failed!")
-		return
+		return false
 	} else {
 		fmt.Println("Delete failed! Error: no user login now.")
-		return
+		return false
 	}
 }
 
-func CreateMeeting(title string, participators []string, starttime string, endtime string) {
+func CreateMeeting(title string, participators []string, starttime string, endtime string) bool {
 	//检测是否已经有登陆用户
 	if !isLogined() {
 		fmt.Println("Create meeting failed! Error: no user login now.")
-		return
+		return false
 	}
 	//检查会议名称是否为空
 	if title == "" {
 		fmt.Println("Create meeting failed! Error: meeting must have a title!")
-		return
+		return false
 	}
 	//检查时间格式的合法性
 	s, _ := isTimeValid(starttime)
 	e, _ := isTimeValid(endtime)
 	if s == false || e == false {
 		fmt.Println("Create meeting failed! Error: time format invalid!")
-		return
+		return false
 	}
 	if checkKey() {
 		meeting := struct {
@@ -328,7 +329,7 @@ func CreateMeeting(title string, participators []string, starttime string, endti
 		//只检测key可以吗？
 		if meeting.Key == "null" {
 			fmt.Println("Create meeting failed!")
-			return
+			return false
 		} else {
 			fmt.Println("Create meeting success!")
 			fmt.Println(meeting.Key)
@@ -336,22 +337,23 @@ func CreateMeeting(title string, participators []string, starttime string, endti
 			fmt.Println(meeting.Participants)
 			fmt.Println(meeting.Start)
 			fmt.Println(meeting.End)
+			return true
 		}
 	} else {
 		fmt.Println("Create meeting failed! Error : no user log in now.")
-		return
+		return false
 	}
 }
 
-func ModifyMeeting(title string, addedparticipators []string, deletedparticipators []string) {
+func ModifyMeeting(title string, addedparticipators []string, deletedparticipators []string) bool {
 	//检测是否已经有登陆用户
 	if !isLogined() {
 		fmt.Println("Modify meeting failed! Error: no user login now.")
-		return
+		return false
 	}
 	if title == "" {
 		fmt.Println("Modify meeting failed! Error: meeting must have a title!")
-		return
+		return false
 	}
 	if checkKey() {
 		meeting := struct {
@@ -382,31 +384,28 @@ func ModifyMeeting(title string, addedparticipators []string, deletedparticipato
 		//只检测key可以吗？
 		if meeting.Key == "null" {
 			fmt.Println("Modify meeting failed!")
-			return
+			return false
 		} else {
 			fmt.Println("Modify meeting success!")
-			// fmt.Println(meeting.Key)
-			// fmt.Println(meeting.Title)
-			// fmt.Println(meeting.Add)
-			// fmt.Println(meeting.Delete)
+			return true
 		}
 	} else {
 		fmt.Println("Modify meeting failed! Error : no user log in now.")
-		return
+		return false
 	}
 }
 
-func QueryMeeting(starttime string, endtime string) {
+func QueryMeeting(starttime string, endtime string) bool {
 	//检测是否已经有登陆用户
 	if !isLogined() {
 		fmt.Println("Query meeting failed! Error: no user login now.")
-		return
+		return false
 	}
 	s, _ := isTimeValid(starttime)
 	e, _ := isTimeValid(endtime)
 	if s == false || e == false {
 		fmt.Println("Query meeting failed! Error: time format invalid!")
-		return
+		return false
 	}
 	//将空格替换成%，这样发出去的请求格式才是正确的
 	starttime = strings.Replace(starttime, " ", "%", -1)
@@ -439,23 +438,24 @@ func QueryMeeting(starttime string, endtime string) {
 			fmt.Println(meeting.End)
 			fmt.Println(" ")
 		}
+		return true
 
 	} else {
 		fmt.Println("Please Log in first!")
-		return
+		return false
 	}
 
 }
 
-func QuitMeeting(title string) {
+func QuitMeeting(title string) bool {
 	//检测是否已经有登陆用户
 	if !isLogined() {
 		fmt.Println("Quit meeting failed! Error: no user login now.")
-		return
+		return false
 	}
 	if title == "" {
 		fmt.Println("Modify meeting failed! Error: meeting must have a title!")
-		return
+		return false
 	}
 	if checkKey() {
 		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meeting/quit/"
@@ -478,27 +478,27 @@ func QuitMeeting(title string) {
 		}
 		if success.Success {
 			fmt.Println("Quit success!")
-			return
+			return true
 		} else {
 			fmt.Println("Quit failed!")
-			return
+			return false
 		}
 
 	} else {
 		fmt.Println("Please Log in first!")
-		return
+		return false
 	}
 }
 
-func CancelMeeting(title string) {
+func CancelMeeting(title string) bool {
 	//检测是否已经有登陆用户
 	if !isLogined() {
 		fmt.Println("cancel meeting failed! Error: no user login now.")
-		return
+		return false
 	}
 	if title == "" {
 		fmt.Println("Modify meeting failed! Error: meeting must have a title!")
-		return
+		return false
 	}
 	if checkKey() {
 		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meeting/cancel/"
@@ -521,23 +521,23 @@ func CancelMeeting(title string) {
 		}
 		if success.Success {
 			fmt.Println("Cancel success!")
-			return
+			return true
 		} else {
 			fmt.Println("Cancel failed!")
-			return
+			return false
 		}
 
 	} else {
 		fmt.Println("Please Log in first!")
-		return
+		return false
 	}
 }
 
-func ClearMeeting() {
+func ClearMeeting() bool {
 	//检测是否已经有登陆用户
 	if !isLogined() {
 		fmt.Println("delete meetings failed! Error: no user login now.")
-		return
+		return false
 	}
 	if checkKey() {
 		prefix := "https://private-6e5eb4a-agendav2.apiary-mock.com/agenda/v2/meetings/delete/"
@@ -560,15 +560,15 @@ func ClearMeeting() {
 		}
 		if success.Success {
 			fmt.Println("Delete success!")
-			return
+			return true
 		} else {
 			fmt.Println("Delete failed!")
-			return
+			return false
 		}
 
 	} else {
 		fmt.Println("Please Log in first!")
-		return
+		return false
 	}
 }
 
