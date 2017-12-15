@@ -6,7 +6,7 @@ go:
 script:
   - go build cli/agenda.go
   - go build service/agenda-service.go
-  - go test cli/client
+  - go test github.com/weiredsnap/upgraded-agenda/cli/client
 
 branches:
   only:
