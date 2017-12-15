@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"upgraded-agenda/cli/client"
+	"github.com/weirdsnap/upgraded-agenda/cli/client"
 
 	"github.com/spf13/cobra"
 )

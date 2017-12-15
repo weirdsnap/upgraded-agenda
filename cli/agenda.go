@@ -14,7 +14,7 @@
 
 package main
 
-import "upgraded-agenda/cli/cmd"
+import "agenda/cmd"
 
 func main() {
 	cmd.Execute()
