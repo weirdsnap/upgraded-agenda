@@ -1,4 +1,5 @@
 package entities
+
 // import ("fmt")
 //UserInfoAtomicService .
 type UserInfoAtomicService struct{}

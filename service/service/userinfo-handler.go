@@ -1,47 +1,45 @@
 package service
 
 import (
-	"github.com/weirdsnap/upgraded-agenda/service/entities"
 	"github.com/unrolled/render"
+	"github.com/weirdsnap/upgraded-agenda/service/entities"
 	// "github.com/weirdsnap/agendaweb/entities"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"encoding/json"
-	"strings"
 	"strconv"
-	"fmt"
+	"strings"
 )
+
 var index string = "86253e9"
 
-
 type User struct {
-	Username     string
-	Password     string
-	Email	     string
-	Telphone 	 string
+	Username string
+	Password string
+	Email    string
+	Telphone string
 }
-
 
 func getUserLoginHandler(formatter *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		req.ParseForm()
 		username := req.Form["username"]
 		password := req.Form["password"]
-		fmt.Println("username:",username," - " ,password)
+		fmt.Println("username:", username, " - ", password)
 		u := entities.UserInfoService.FindByUsername(string(username[0]))
-		if (strings.EqualFold(u.Password, password[0])) {
+		if strings.EqualFold(u.Password, password[0]) {
 			formatter.JSON(w, http.StatusOK, struct {
-				KEY      string `json:"key"`
+				KEY string `json:"key"`
 			}{KEY: index + strconv.Itoa(u.UID)})
 		} else {
 			formatter.JSON(w, http.StatusOK, struct {
-				KEY      string `json:"key"`
+				KEY string `json:"key"`
 			}{KEY: "null"})
 		}
-		
+
 	}
 }
-
 
 func psotUserRegisterHandler(formatter *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -54,35 +52,33 @@ func psotUserRegisterHandler(formatter *render.Render) http.HandlerFunc {
 		json.Unmarshal([]byte(result), &user)
 
 		u := entities.NewUserInfo(entities.UserInfo{Username: user.Username})
-		u.Password =user.Password
+		u.Password = user.Password
 		u.Email = user.Email
 		u.Tel = user.Telphone
 		// fmt.Println("u",u)
 		entities.UserInfoService.Save(u)
-		
+
 		formatter.JSON(w, http.StatusOK, user)
 	}
 }
-
 
 func getUserVerifyHandler(formatter *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		req.ParseForm()
 		//username := req.Form["username"]
-	//	password := req.Form["password"]
-	
+		//	password := req.Form["password"]
+
 	}
 }
 
 func getUserLogoutHandler(formatter *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		req.ParseForm()
-	//	username := req.Form["username"]
-	//	password := req.Form["password"]
-	
+		//	username := req.Form["username"]
+		//	password := req.Form["password"]
+
 	}
 }
-
 
 // func postUserInfoHandler(formatter *render.Render) http.HandlerFunc {
 

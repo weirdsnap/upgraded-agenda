@@ -17,7 +17,7 @@ func init() {
 	}
 	mydb = db
 	mydb.Exec("CREATE TABLE userinfo (uid INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(64) NULL, password VARCHAR(64) NULL, tel VARCHAR(64) NULL, email VARCHAR(64) NULL);")
-	
+
 }
 
 // SQLExecer interface for supporting sql.DB and sql.Tx to do sql statement
