@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	flag "github.com/spf13/pflag"
-	//"github.com/weirdsnap/agendaweb/service"
-	"github.com/weirdsnap/upgraded-agenda/service/service"
+	"github.com/weirdsnap/agendaweb/service"
+	//"github.com/weirdsnap/upgraded-agenda/service/service"
 	"os"
 )
 

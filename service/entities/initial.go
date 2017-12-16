@@ -10,12 +10,14 @@ var mydb *sql.DB
 
 func init() {
 	//https://stackoverflow.com/questions/45040319/unsupported-scan-storing-driver-value-type-uint8-into-type-time-time
-	db, err := sql.Open("sqlite3", "./DB.db")
+	db, err := sql.Open("sqlite3", "/data/DB.db")
 	//db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
 	mydb = db
+	mydb.Exec("CREATE TABLE userinfo (uid INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(64) NULL, password VARCHAR(64) NULL, tel VARCHAR(64) NULL, email VARCHAR(64) NULL);")
+	
 }
 
 // SQLExecer interface for supporting sql.DB and sql.Tx to do sql statement
