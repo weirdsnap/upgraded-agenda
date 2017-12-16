@@ -1,5 +1,5 @@
 # upgraded-agenda
-![TravisCI](https://travis-ci.org/weirdsnap/upgraded-agenda)
+![TravisCI](https://travis-ci.org/weirdsnap/upgraded-agenda.svg?branch=master)
 
 upgraded agenda, client and server.
 
